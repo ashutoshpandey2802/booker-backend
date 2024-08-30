@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, get_user_model
-from .models import UserProfile
+from .models import UserProfile,Store, Staff
 
 User = get_user_model()
 
@@ -52,3 +52,16 @@ class LoginSerializer(serializers.Serializer):
         if user and user.is_active:
             return user
         raise serializers.ValidationError("Invalid credentials")
+
+
+
+class StoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Store
+        fields = '__all__'
+class StaffSerializer(serializers.ModelSerializer):
+    stores = StoreSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Staff
+        fields = '__all__'

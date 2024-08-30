@@ -2,7 +2,9 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .serializers import LoginSerializer, RegisterSerializer
+from .serializers import LoginSerializer, RegisterSerializer,StoreSerializer, StaffSerializer
+from .models import Store, Staff
+from rest_framework import viewsets
 
 class RegisterUserView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -39,3 +41,14 @@ class LogoutUserView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         request.user.auth_token.delete()
         return Response({"message": "Successfully logged out"}, status=status.HTTP_200_OK)
+
+
+class StoreViewSet(viewsets.ModelViewSet):
+    queryset = Store.objects.all()
+    serializer_class = StoreSerializer
+    permission_classes = [IsAuthenticated]
+
+class StaffViewSet(viewsets.ModelViewSet):
+    queryset = Staff.objects.all()
+    serializer_class = StaffSerializer
+    permission_classes = [IsAuthenticated]
