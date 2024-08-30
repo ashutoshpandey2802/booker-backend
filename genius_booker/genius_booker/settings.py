@@ -144,9 +144,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  
+    'http://localhost:9000',  # Replace with your frontend URL
+    'http://127.0.0.1:9000',
 ]
-
 AUTHENTICATION_BACKENDS = [
     'booker.backends.EmailBackend',  
     'django.contrib.auth.backends.ModelBackend',  
