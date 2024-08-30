@@ -55,13 +55,14 @@ class LoginSerializer(serializers.Serializer):
 
 
 
-class StoreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Store
-        fields = '__all__'
 class StaffSerializer(serializers.ModelSerializer):
-    stores = StoreSerializer(many=True, read_only=True)
-
     class Meta:
         model = Staff
         fields = '__all__'
+
+class StoreSerializer(serializers.ModelSerializer):
+    staff = StaffSerializer(many=True, read_only=True, source='staff_set')
+
+    class Meta:
+        model = Store
+        fields ='__all__'
