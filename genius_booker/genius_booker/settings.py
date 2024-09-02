@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-m9sso9!c9*!^5*ba1ey*__y(tjlbsi#4kk5s-tn=_r224cxzj*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.29.115' ]
+ALLOWED_HOSTS = ['192.168.29.115' ,'127.0.0.1']
 
 
 # Application definition
@@ -53,7 +53,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 REST_FRAMEWORK = {
@@ -144,8 +143,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:9000',  # Replace with your frontend URL
+    'http://localhost:9000', 
     'http://127.0.0.1:9000',
+    'http://192.168.29.115:9000',
 ]
 AUTHENTICATION_BACKENDS = [
     'booker.backends.EmailBackend',  

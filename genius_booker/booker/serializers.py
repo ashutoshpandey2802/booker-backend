@@ -51,14 +51,20 @@ class LoginSerializer(serializers.Serializer):
         user = authenticate(email=data['email'], password=data['password'])
         if user and user.is_active:
             return user
-        raise serializers.ValidationError("Invalid credentials")
+        raise serializers.ValidationError("Invalid email or password")
 
 
 
 class StaffSerializer(serializers.ModelSerializer):
+    stores = serializers.SerializerMethodField()
+    
     class Meta:
         model = Staff
         fields = '__all__'
+    
+    def get_stores(self, obj):
+        # Return store IDs or names as a list of strings or integers
+        return [store.id for store in obj.stores.all()] 
 
 class StoreSerializer(serializers.ModelSerializer):
     staff = StaffSerializer(many=True, read_only=True, source='staff_set')

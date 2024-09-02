@@ -40,13 +40,46 @@ class LogoutUserView(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         request.user.auth_token.delete()
-        return Response({"message": "Successfully logged out"}, status=status.HTTP_200_OK)
+        return Response({
+            "status_code": status.HTTP_200_OK,
+            "status": "success",
+            "message": "Successfully logged out"
+        }, status=status.HTTP_200_OK)
 
 
 class StoreViewSet(viewsets.ModelViewSet):
     queryset = Store.objects.all()
     serializer_class = StoreSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        stores = serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        response_data = {
+            "status_code": status.HTTP_201_CREATED,
+            "status": "success",
+            "message": "Stores created successfully",
+            "stores": serializer.data
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
+
 
 class StaffViewSet(viewsets.ModelViewSet):
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        staff_members = serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        response_data = {
+            "status_code": status.HTTP_201_CREATED,
+            "status": "success",
+            "message": "Staff members created successfully",
+            "staff": serializer.data
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
