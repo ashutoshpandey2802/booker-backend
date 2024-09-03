@@ -2,3 +2,5 @@ Django
 django-cors-headers
 djangorestframework
 djangorestframework-simplejwt
+dj-database-url
+psycopg2

@@ -5,6 +5,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import LoginSerializer, RegisterSerializer,StoreSerializer, StaffSerializer
 from .models import Store, Staff
 from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError
+
+from . import serializers
 
 class RegisterUserView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -53,15 +56,15 @@ class StoreViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, many=True)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        stores = serializer.save()
+        store = serializer.save()
         headers = self.get_success_headers(serializer.data)
         response_data = {
             "status_code": status.HTTP_201_CREATED,
             "status": "success",
-            "message": "Stores created successfully",
-            "stores": serializer.data
+            "message": "Store created successfully",
+            "store": serializer.data
         }
         return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -72,14 +75,27 @@ class StaffViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, many=True)
-        serializer.is_valid(raise_exception=True)
-        staff_members = serializer.save()
-        headers = self.get_success_headers(serializer.data)
+        staff_data = request.data.get('staff', [])
+        store_ids_or_names = request.data.get('stores', [])
+
+        if not store_ids_or_names:
+            return Response({"stores": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
+
+        created_staff = []
+
+        for staff_member_data in staff_data:
+            staff_member_data['stores'] = store_ids_or_names
+            
+            serializer = self.get_serializer(data=staff_member_data)
+            serializer.is_valid(raise_exception=True)
+            staff_member = serializer.save()
+
+            created_staff.append(staff_member)
+
         response_data = {
             "status_code": status.HTTP_201_CREATED,
             "status": "success",
-            "message": "Staff members created successfully",
-            "staff": serializer.data
+            "message": "Staff member(s) created and assigned to stores successfully",
+            "staff": [StaffSerializer(staff).data for staff in created_staff]
         }
-        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(response_data, status=status.HTTP_201_CREATED)

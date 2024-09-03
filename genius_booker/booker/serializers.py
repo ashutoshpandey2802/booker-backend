@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, get_user_model
 from .models import UserProfile,Store, Staff
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -55,20 +56,53 @@ class LoginSerializer(serializers.Serializer):
 
 
 
+
 class StaffSerializer(serializers.ModelSerializer):
-    stores = serializers.SerializerMethodField()
-    
+    stores = serializers.ListField(child=serializers.CharField(), write_only=True)
+
     class Meta:
         model = Staff
         fields = '__all__'
-    
-    def get_stores(self, obj):
-        # Return store IDs or names as a list of strings or integers
-        return [store.id for store in obj.stores.all()] 
+
+    def validate_stores(self, stores):
+        
+        store_ids = []
+        for store in stores:
+            if isinstance(store, int):
+                # Handle as store ID
+                if Store.objects.filter(id=store).exists():
+                    store_ids.append(store)
+                else:
+                    raise serializers.ValidationError(f"Store with ID '{store}' does not exist.")
+            elif isinstance(store, str):
+                if store.isdigit():  # If the string is a number, treat it as an ID
+                    store_id = int(store)
+                    if Store.objects.filter(id=store_id).exists():
+                        store_ids.append(store_id)
+                    else:
+                        raise serializers.ValidationError(f"Store with ID '{store}' does not exist.")
+                else:  # Handle as store name
+                    try:
+                        store_obj = Store.objects.get(name=store)
+                        store_ids.append(store_obj.id)
+                    except Store.DoesNotExist:
+                        raise serializers.ValidationError(f"Store with name '{store}' does not exist.")
+            else:
+                raise serializers.ValidationError(f"Invalid store identifier: {store}")
+
+        return store_ids
+
+
 
 class StoreSerializer(serializers.ModelSerializer):
-    staff = StaffSerializer(many=True, read_only=True, source='staff_set')
-
     class Meta:
         model = Store
-        fields ='__all__'
+        fields = '__all__'
+
+    def validate_name(self, value):
+        """
+        Check that the store name is unique.
+        """
+        if Store.objects.filter(name=value).exists():
+            raise serializers.ValidationError("A store with this name already exists.")
+        return value

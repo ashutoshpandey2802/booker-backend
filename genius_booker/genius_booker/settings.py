@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-m9sso9!c9*!^5*ba1ey*__y(tjlbsi#4kk5s-tn=_r224cxzj*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.29.115' ,'127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -94,6 +94,7 @@ DATABASES = {
     }
 }
 
+# ATABASES['default']=dj_database_url.parse("postgresql://genius_booker_user:fCmbGBRBERdxhfwn7eMsFZKaKWdRqj5p@dpg-craojalds78s73d7jjb0-a.oregon-postgres.render.com/genius_booker")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
