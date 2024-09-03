@@ -6,6 +6,7 @@ from .serializers import LoginSerializer, RegisterSerializer,StoreSerializer, St
 from .models import Store, Staff
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
+from rest_framework.decorators import action
 
 from . import serializers
 
@@ -50,6 +51,7 @@ class LogoutUserView(generics.GenericAPIView):
         }, status=status.HTTP_200_OK)
 
 
+
 class StoreViewSet(viewsets.ModelViewSet):
     queryset = Store.objects.all()
     serializer_class = StoreSerializer
@@ -59,6 +61,7 @@ class StoreViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         store = serializer.save()
+        
         headers = self.get_success_headers(serializer.data)
         response_data = {
             "status_code": status.HTTP_201_CREATED,
@@ -67,6 +70,24 @@ class StoreViewSet(viewsets.ModelViewSet):
             "store": serializer.data
         }
         return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=True, methods=['get'], url_path='details')
+    def store_details(self, request, pk=None):
+        store = self.get_object()
+        store_serializer = self.get_serializer(store)
+        staff_serializer = StaffSerializer(store.staff.all(), many=True)
+        
+        response_data = {
+            "status_code": status.HTTP_200_OK,
+            "status": "success",
+            "message": "Store details retrieved successfully",
+            "store": {
+                **store_serializer.data,
+                "staff": staff_serializer.data  # Include the associated staff within the store object
+            }
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
 
 
 class StaffViewSet(viewsets.ModelViewSet):

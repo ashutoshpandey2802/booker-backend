@@ -57,31 +57,30 @@ class LoginSerializer(serializers.Serializer):
 
 
 
+
 class StaffSerializer(serializers.ModelSerializer):
     stores = serializers.ListField(child=serializers.CharField(), write_only=True)
 
     class Meta:
         model = Staff
-        fields = '__all__'
+        exclude = ['password']  # Exclude password from the serialization
 
     def validate_stores(self, stores):
-        
         store_ids = []
         for store in stores:
             if isinstance(store, int):
-                # Handle as store ID
                 if Store.objects.filter(id=store).exists():
                     store_ids.append(store)
                 else:
                     raise serializers.ValidationError(f"Store with ID '{store}' does not exist.")
             elif isinstance(store, str):
-                if store.isdigit():  # If the string is a number, treat it as an ID
+                if store.isdigit():
                     store_id = int(store)
                     if Store.objects.filter(id=store_id).exists():
                         store_ids.append(store_id)
                     else:
                         raise serializers.ValidationError(f"Store with ID '{store}' does not exist.")
-                else:  # Handle as store name
+                else:
                     try:
                         store_obj = Store.objects.get(name=store)
                         store_ids.append(store_obj.id)
@@ -89,12 +88,12 @@ class StaffSerializer(serializers.ModelSerializer):
                         raise serializers.ValidationError(f"Store with name '{store}' does not exist.")
             else:
                 raise serializers.ValidationError(f"Invalid store identifier: {store}")
-
         return store_ids
 
 
 
 class StoreSerializer(serializers.ModelSerializer):
+    staff = StaffSerializer(many=True, read_only=True)
     class Meta:
         model = Store
         fields = '__all__'
